@@ -1,0 +1,142 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgres"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
+}
+
+// --------------------------------------
+
+model User {
+  id             Int      @id @default(autoincrement())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  firstName      String
+  lastName       String
+  email          String   @unique
+  hashedPassword String?
+  role           String   @default("USER")
+
+  tokens          Token[]
+  sessions        Session[]
+  OwnedCompany    Company?  @relation(name: "CompanyOwner")
+  BelongedCompany Company[] @relation(name: "CompanyMember")
+}
+
+model Session {
+  id                 Int       @id @default(autoincrement())
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  expiresAt          DateTime?
+  handle             String    @unique
+  hashedSessionToken String?
+  antiCSRFToken      String?
+  publicData         String?
+  privateData        String?
+
+  user   User? @relation(fields: [userId], references: [id])
+  userId Int?
+}
+
+model Token {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  hashedToken String
+  type        String
+  // See note below about TokenType enum
+  // type        TokenType
+  expiresAt   DateTime
+  sentTo      String
+
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+
+  @@unique([hashedToken, type])
+}
+
+model Company {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  name        String
+  description String?
+  owner       User     @relation(name: "CompanyOwner", fields: [ownerId], references: [id])
+  ownerId     Int      @unique
+
+  users User[] @relation(name: "CompanyMember")
+
+  @@unique([name])
+}
+
+model Space {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  name        String
+  description String?
+  status      Status   @default(DRAFT)
+  tags        String[]
+  topics      Topic[]  @relation(name: "SpaceTopic")
+
+  @@unique([name])
+}
+
+// NOTE: It's highly recommended to use an enum for the token type
+//       but enums only work in Postgres.
+//       See: https://blitzjs.com/docs/database-overview#switch-to-postgre-sql
+// enum TokenType {
+//   RESET_PASSWORD
+// }
+
+model Topic {
+  id          Int       @id @default(autoincrement())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  name        String
+  tags        String[]
+  status      Status    @default(DRAFT)
+  Space       Space?    @relation(name: "SpaceTopic", fields: [spaceId], references: [id])
+  spaceId     Int?
+  sections    Section[] @relation(name: "TopicSection")
+  description String?
+}
+
+model Section {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  title       String
+  status      Status   @default(DRAFT)
+  tags        String[]
+  content     Block[]  @relation(name: "DocumentBlock")
+  topic       Topic?   @relation(name: "TopicSection", fields: [topicId], references: [id])
+  topicId     Int?
+  description String?
+
+  @@unique([title])
+}
+
+model Block {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String
+  row       Int
+  type      String
+  content   String
+  section   Section? @relation(name: "DocumentBlock", fields: [sectionId], references: [id])
+  sectionId Int?
+}
+
+enum Status {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
