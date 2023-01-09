@@ -4,6 +4,7 @@ import { z } from "zod"
 
 const CreateSection = z.object({
   name: z.string(),
+  title: z.string()
 })
 
 export default resolver.pipe(resolver.zod(CreateSection), resolver.authorize(), async (input) => {

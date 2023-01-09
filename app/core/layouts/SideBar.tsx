@@ -24,7 +24,7 @@ import InboxIcon from "@mui/icons-material/MoveToInbox"
 import MailIcon from "@mui/icons-material/Mail"
 import Menu from "@mui/material/Menu"
 import MenuItem from "@mui/material/MenuItem"
-import { Routes, useQuery, useRouter } from "blitz"
+import { Routes, useMutation, useQuery, useRouter } from "blitz"
 import { useCurrentUser } from "../hooks/useCurrentUser"
 import InputBase from "@mui/material/InputBase"
 import SearchIcon from "@mui/icons-material/Search"
@@ -47,6 +47,7 @@ import getSpaces from "app/spaces/queries/getSpaces"
 import getSpacesWithAll from "app/spaces/queries/getSpacesWithAll"
 import { Space } from "@prisma/client"
 import SubMenu from "../components/SubMenu"
+import logout from "app/auth/mutations/logout"
 
 const drawerWidth = 240
 
@@ -183,6 +184,8 @@ export default function SideBar({ children }) {
   const [spacesWithChildrenQuery] = useQuery(getSpacesWithAll, {})
   const [spacesWithChildren, setSpacesWithChildren] = React.useState(spacesWithChildrenQuery)
 
+  const [logoutMutation] = useMutation(logout)
+
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget)
   }
@@ -304,6 +307,13 @@ export default function SideBar({ children }) {
               Profile
             </MenuItem>
             <MenuItem>Settings</MenuItem>
+            <MenuItem
+              onClick={async () => {
+                await logoutMutation()
+              }}
+            >
+              Log out
+            </MenuItem>
           </Menu>
         </Toolbar>
       </AppBar>

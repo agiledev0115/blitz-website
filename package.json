@@ -2,8 +2,8 @@
   "name": "copycat",
   "version": "1.0.0",
   "scripts": {
-    "dev": "blitz dev",
-    "build": "blitz build",
+    "dev": "SET NODE_OPTIONS=--openssl-legacy-provider && blitz dev",
+    "build": "SET NODE_OPTIONS=--openssl-legacy-provider && blitz build",
     "start": "blitz start",
     "studio": "blitz prisma studio",
     "lint": "eslint --ignore-path .gitignore --ext .js,.ts,.tsx .",

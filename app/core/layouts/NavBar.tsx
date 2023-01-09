@@ -9,12 +9,14 @@ import MenuIcon from "@mui/icons-material/Menu"
 import { useCurrentUser } from "../hooks/useCurrentUser"
 import { Suspense } from "react"
 import { Menu, MenuItem } from "@mui/material"
-import { Link, Routes, useRouter } from "blitz"
+import { Link, Routes, useMutation, useRouter } from "blitz"
+import logout from "app/auth/mutations/logout"
 
 function NavBarBase() {
   const currentUser = useCurrentUser()
   const router = useRouter()
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
+  const [logoutMutation] = useMutation(logout)
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget)
@@ -61,6 +63,13 @@ function NavBarBase() {
               open={Boolean(anchorEl)}
               onClose={handleClose}
             >
+              <MenuItem
+                onClick={async () => {
+                  await logoutMutation()
+                }}
+              >
+                Log out
+              </MenuItem>
               <MenuItem
                 onClick={() => {
                   router.push(Routes.ProfilePage())
